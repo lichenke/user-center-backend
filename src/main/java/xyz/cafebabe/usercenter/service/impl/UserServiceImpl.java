@@ -12,8 +12,7 @@ import org.springframework.stereotype.Service;
 * @createDate 2024-11-10 22:42:29
 */
 @Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, User>
-    implements UserService{
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService{
 
 }
 

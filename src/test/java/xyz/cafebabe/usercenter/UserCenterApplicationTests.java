@@ -1,5 +1,4 @@
 package xyz.cafebabe.usercenter;
-import java.util.Date;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,10 +24,7 @@ class UserCenterApplicationTests {
         user.setUserPassword("xxx");
         user.setPhone("123");
         user.setEmail("234");
-        System.out.println(user.getId());
         boolean result = userService.save(user);
-        System.out.println(user.getId());
         Assertions.assertTrue(result);
-
     }
 }
