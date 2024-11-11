@@ -19,4 +19,5 @@ isDelete     tinyint  default 0                 not null comment '是否删除 0
 comment '用户表';
 ```
 
+### 注册逻辑
 
