@@ -1,15 +1,15 @@
-package xyz.cafebabe.ucbackend;
+package xyz.cafebabe.usercenter;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@MapperScan("xyz.cafebabe.ucbackend.mapper")
-public class UcBackendApplication {
+@MapperScan("xyz.cafebabe.usercenter.mapper")
+public class UserCenterApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(UcBackendApplication.class, args);
+        SpringApplication.run(UserCenterApplication.class, args);
     }
 
 }

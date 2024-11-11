@@ -10,10 +10,8 @@
     </parent>
 
     <groupId>xyz.cafebabe</groupId>
-    <artifactId>uc-backend</artifactId>
+    <artifactId>UserCenter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>uc-backend</name>
-    <description>uc-backend</description>
 
     <properties>
         <java.version>1.8</java.version>
