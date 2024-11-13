@@ -20,4 +20,7 @@ public interface UserService extends IService<User> {
      */
     long register(String account, String password, String checkPassword);
 
+
+
+
 }
