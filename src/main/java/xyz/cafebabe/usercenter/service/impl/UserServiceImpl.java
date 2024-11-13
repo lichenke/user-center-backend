@@ -2,6 +2,7 @@ package xyz.cafebabe.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import xyz.cafebabe.usercenter.mapper.UserMapper;
@@ -10,6 +11,7 @@ import xyz.cafebabe.usercenter.service.PasswordService;
 import xyz.cafebabe.usercenter.service.UserService;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +21,7 @@ import java.util.regex.Pattern;
  * @createDate 2024-11-10 22:42:29
  */
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
@@ -67,6 +70,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return -1;
         }
         return user.getId(); // 返回用户ID
+    }
+
+    @Override
+    public User login(String account, String password, HttpServletRequest request) {
+        //1. 校验
+        if (StringUtils.isAllBlank(account, password)) {
+            return null;
+        }
+        if (account.length() < 4) {
+            return null;
+        }
+        // 密码是否符合要求
+        if (!passwordService.isValidPassword(password)) {
+            return null;
+        }
+        // 账号不包含特殊字符
+        String regExp = "\\pP|\\pS|\\s+";
+        Matcher matcher = Pattern.compile(regExp).matcher(account);
+        if (matcher.find()) {
+            // 有特殊字符
+            return null;
+        }
+        // 2. 密码加密
+        String encrypted = passwordService.encryptPassword(password);
+        // 3. 查询用户是否存在
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("userAccount", account);
+        wrapper.eq("userPassword", encrypted);
+        User user = userMapper.selectOne(wrapper);
+        if (user == null) {
+            log.info("login failed, password mismatch...");
+            return null;
+        }
+        User safe = new User();
+        safe.setId(user.getId());
+        safe.setUsername(user.getUsername());
+        safe.setUserAccount(user.getUserAccount());
+        safe.setAvatarUrl(user.getAvatarUrl());
+        safe.setGender(user.getGender());
+        safe.setPhone(user.getPhone());
+        safe.setEmail(user.getEmail());
+        safe.setUserStatus(user.getUserStatus());
+
+        // 4. 记录用户的登录态
+        // 客户端连接服务器后，得到一个session状态（匿名会话），返回给前端
+        // 用户登录成功后，得到了登录成功的session，并且给该session设置一些值（比如用户信息），返回给前端一个设置cookie的命令
+        // 前端接收到后端的命令后，设置cookie，保存到浏览器中
+        // 前端再次请求后端的时候（相同域名），在请求头中带上cookie去请求
+        // 后端拿到前端传来的cookie，找到对应的session
+        // 后端从session中可以取出基于该session存储的变量（用户信息）
+        request.getSession().setAttribute("LOGIN_STATUS", safe);
+        return safe;
     }
 }
 

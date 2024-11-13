@@ -3,6 +3,8 @@ package xyz.cafebabe.usercenter.service;
 import xyz.cafebabe.usercenter.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
 * @author lichenke
 * @description 针对表【user(用户表)】的数据库操作Service
@@ -21,6 +23,6 @@ public interface UserService extends IService<User> {
     long register(String account, String password, String checkPassword);
 
 
-
+    User login(String account, String password, HttpServletRequest request);
 
 }

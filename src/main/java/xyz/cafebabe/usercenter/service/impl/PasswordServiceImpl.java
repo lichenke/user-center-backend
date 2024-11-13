@@ -18,6 +18,7 @@ public class PasswordServiceImpl implements PasswordService {
     @Override
     public String encryptPassword(String rawPassword) {
         if (!isValidPassword(rawPassword)) {
+            // TODO 自定义异常对象
             throw new IllegalArgumentException("密码不符合安全要求");
         }
         return passwordEncoder.encode(rawPassword);
