@@ -12,6 +12,8 @@ import xyz.cafebabe.usercenter.service.UserService;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -92,14 +94,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 有特殊字符
             return null;
         }
-        // 2. 密码加密
-        String encrypted = passwordService.encryptPassword(password);
-        // 3. 查询用户是否存在
+        // 2. 查询用户是否存在
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("userAccount", account);
-        wrapper.eq("userPassword", encrypted);
-        User user = userMapper.selectOne(wrapper);
-        if (user == null) {
+        wrapper.eq("userAccount", account); // account不应该能重复，所以这个条件就够用了
+        User user = userMapper.selectOne(wrapper); // 只有一个，返回多个就报错
+        if (user == null || !passwordService.matches(password, user.getUserPassword())) {
             log.info("login failed, password mismatch...");
             return null;
         }
@@ -123,6 +122,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         request.getSession().setAttribute("LOGIN_STATUS", safe);
         return safe;
     }
+
+    @Override
+    public List<User> list(String username) {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        if (StringUtils.isEmpty(username)) { // 不为空时才拼入条件中
+            return Collections.emptyList();
+        }
+        wrapper.like("username", username);
+        return userMapper.selectList(wrapper);
+    }
+
+    @Override
+    public boolean delete(long id) {
+        if (id <= 0) {
+            return false;
+        }
+        return userMapper.deleteById(id) > 0;
+    }
+
+
 }
 
 
