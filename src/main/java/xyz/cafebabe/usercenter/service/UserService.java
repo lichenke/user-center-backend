@@ -40,7 +40,7 @@ public interface UserService extends IService<User> {
      * @param username 用户名
      * @return 用户对象列表
      */
-    List<User> list(String username);
+    List<User> list(String username, HttpServletRequest request);
 
     /**
      * 根据id删除用户
@@ -48,6 +48,6 @@ public interface UserService extends IService<User> {
      * @param id 用户id
      * @return 删除成功则返回true，否则返回false
      */
-    boolean delete(long id);
+    boolean delete(long id, HttpServletRequest request);
 
 }

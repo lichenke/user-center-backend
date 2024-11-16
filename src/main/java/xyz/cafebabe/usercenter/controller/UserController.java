@@ -55,18 +55,18 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public List<User> search(String username) {
+    public List<User> search(String username, HttpServletRequest httpServletRequest) {
         if (StringUtils.isEmpty(username)) {
             return Collections.emptyList();
         }
-        return userService.list(username);
+        return userService.list(username, httpServletRequest);
     }
 
     @PostMapping("/delete")
-    public boolean deleteUser(long userId) {
+    public boolean deleteUser(long userId, HttpServletRequest httpServletRequest) {
         if (userId <= 0) {
             return false;
         }
-        return userService.delete(userId);
+        return userService.delete(userId, httpServletRequest);
     }
 }

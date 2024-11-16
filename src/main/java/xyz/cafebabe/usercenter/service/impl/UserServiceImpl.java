@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static xyz.cafebabe.usercenter.constant.UserConstant.ADMIN_ROLE;
+import static xyz.cafebabe.usercenter.constant.UserConstant.USER_LOGIN_STATUS;
+
 /**
  * @author lichenke
  * @description 针对表【user(用户表)】的数据库操作Service实现
@@ -97,6 +100,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 2. 查询用户是否存在
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("userAccount", account); // account不应该能重复，所以这个条件就够用了
+        wrapper.select("id", "username", "userAccount", "avatarUrl", "userPassword",
+                "gender", "phone", "email", "userStatus", "userRole");
         User user = userMapper.selectOne(wrapper); // 只有一个，返回多个就报错
         if (user == null || !passwordService.matches(password, user.getUserPassword())) {
             log.info("login failed, password mismatch...");
@@ -111,7 +116,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safe.setPhone(user.getPhone());
         safe.setEmail(user.getEmail());
         safe.setUserStatus(user.getUserStatus());
-
+        safe.setUserRole(user.getUserRole());
         // 4. 记录用户的登录态
         // 客户端连接服务器后，得到一个session状态（匿名会话），返回给前端
         // 用户登录成功后，得到了登录成功的session，并且给该session设置一些值（比如用户信息），返回给前端一个设置cookie的命令
@@ -119,28 +124,59 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 前端再次请求后端的时候（相同域名），在请求头中带上cookie去请求
         // 后端拿到前端传来的cookie，找到对应的session
         // 后端从session中可以取出基于该session存储的变量（用户信息）
-        request.getSession().setAttribute("LOGIN_STATUS", safe);
+        request.getSession().setAttribute(USER_LOGIN_STATUS, safe);
         return safe;
     }
 
     @Override
-    public List<User> list(String username) {
+    public List<User> list(String username, HttpServletRequest request) {
+        // 首先鉴权
+        if (!authorized(request)) {
+            return Collections.emptyList();
+        }
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         if (StringUtils.isEmpty(username)) { // 不为空时才拼入条件中
             return Collections.emptyList();
         }
         wrapper.like("username", username);
+        deIdentify(wrapper);
         return userMapper.selectList(wrapper);
     }
 
     @Override
-    public boolean delete(long id) {
+    public boolean delete(long id, HttpServletRequest request) {
+        // 首先鉴权
+        if (!authorized(request)) {
+            return false;
+        }
         if (id <= 0) {
             return false;
         }
         return userMapper.deleteById(id) > 0;
     }
 
+    /**
+     * 用户鉴权
+     *
+     * @param request HttpServletRequest
+     * @return 有权限则返回true，否则返回false
+     */
+    private boolean authorized(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATUS);
+        if (userObj == null) {
+            return false;
+        }
+        User user = (User) userObj;
+        return user.getUserRole() == ADMIN_ROLE;
+    }
+
+    /**
+     * 用户信息脱敏
+     */
+    private void deIdentify(QueryWrapper<User> wrapper) {
+        wrapper.select("id", "username", "userAccount", "avatarUrl",
+                "gender", "phone", "email", "userStatus", "userRole");
+    }
 
 }
 

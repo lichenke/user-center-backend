@@ -3,7 +3,6 @@ package xyz.cafebabe.usercenter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import xyz.cafebabe.usercenter.model.domain.User;
 import xyz.cafebabe.usercenter.service.PasswordService;
 import xyz.cafebabe.usercenter.service.UserService;
 
