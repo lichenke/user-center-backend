@@ -10,6 +10,7 @@ import xyz.cafebabe.usercenter.service.UserService;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,6 +55,11 @@ public class UserController {
         return userService.login(account, password, httpServletRequest);
     }
 
+    @GetMapping("/currentUser")
+    public User currentUser(HttpServletRequest httpServletRequest) {
+        return userService.currentUser(httpServletRequest);
+    }
+
     @GetMapping("/search")
     public List<User> search(String username, HttpServletRequest httpServletRequest) {
         if (StringUtils.isEmpty(username)) {
@@ -69,4 +75,6 @@ public class UserController {
         }
         return userService.delete(userId, httpServletRequest);
     }
+
+
 }

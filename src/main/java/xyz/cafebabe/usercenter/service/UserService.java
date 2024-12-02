@@ -35,6 +35,13 @@ public interface UserService extends IService<User> {
     User login(String account, String password, HttpServletRequest request);
 
     /**
+     * 获取当前登录用户信息（状态）
+     *
+     * @return 当前登录用户
+     */
+    User currentUser(HttpServletRequest request);
+
+    /**
      * 根据用户名查询用户
      *
      * @param username 用户名

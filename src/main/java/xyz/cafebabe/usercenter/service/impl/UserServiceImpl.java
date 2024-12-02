@@ -129,6 +129,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public User currentUser(HttpServletRequest request) {
+        Object currentUser = request.getSession().getAttribute(USER_LOGIN_STATUS);
+        if (currentUser == null) {
+            return null;
+        }
+        // 再查一次库，获取该用户最新的信息
+        User user = (User) currentUser;
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", user.getId());
+        deIdentify(wrapper);
+        return userMapper.selectOne(wrapper);
+    }
+
+    @Override
     public List<User> list(String username, HttpServletRequest request) {
         // 首先鉴权
         if (!authorized(request)) {
