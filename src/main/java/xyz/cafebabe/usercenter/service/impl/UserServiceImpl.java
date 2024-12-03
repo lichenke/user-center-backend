@@ -129,6 +129,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public boolean logout(HttpServletRequest request) {
+        try {
+            // 根据sessionId移除登录态即可完成用户注销
+            request.getSession().removeAttribute(USER_LOGIN_STATUS);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
     public User currentUser(HttpServletRequest request) {
         Object currentUser = request.getSession().getAttribute(USER_LOGIN_STATUS);
         if (currentUser == null) {

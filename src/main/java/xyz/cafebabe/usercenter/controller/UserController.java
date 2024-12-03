@@ -55,6 +55,11 @@ public class UserController {
         return userService.login(account, password, httpServletRequest);
     }
 
+    @PostMapping("/logout")
+    public Boolean logout(HttpServletRequest httpServletRequest) {
+        return userService.logout(httpServletRequest);
+    }
+
     @GetMapping("/currentUser")
     public User currentUser(HttpServletRequest httpServletRequest) {
         return userService.currentUser(httpServletRequest);

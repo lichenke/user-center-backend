@@ -34,6 +34,15 @@ public interface UserService extends IService<User> {
      */
     User login(String account, String password, HttpServletRequest request);
 
+
+    /**
+     * 用户注销
+     *
+     * @param request HttpServletRequest
+     * @return 用户注销成功则返回true，否则返回false
+     */
+    boolean logout(HttpServletRequest request);
+
     /**
      * 获取当前登录用户信息（状态）
      *
