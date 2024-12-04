@@ -1,10 +1,9 @@
 package xyz.cafebabe.usercenter.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import xyz.cafebabe.usercenter.common.BaseResponse;
-import xyz.cafebabe.usercenter.exception.ParamException;
 import xyz.cafebabe.usercenter.model.domain.User;
 import xyz.cafebabe.usercenter.model.domain.request.LoginRequest;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
@@ -30,30 +29,18 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public BaseResponse<Long> register(@RequestBody RegisterRequest request) {
-        if (request == null) {
-            throw ParamException.nullParamException(RegisterRequest.getClassName());
-        }
+    public BaseResponse<Long> register(@Validated @RequestBody RegisterRequest request) {
         String account = request.getAccount();
         String password = request.getPassword();
         String checkPassword = request.getCheckPassword();
-        if (StringUtils.isAnyBlank(account, password, checkPassword)) {
-            throw ParamException.hasBlankParamException("account", "password", "checkPassword");
-        }
         long id = userService.register(account, password, checkPassword);
         return BaseResponse.success(id);
     }
 
     @PostMapping("/login")
     public BaseResponse<User> login(@RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
-        if (request == null) {
-            throw ParamException.nullParamException(LoginRequest.getClassName());
-        }
         String account = request.getAccount();
         String password = request.getPassword();
-        if (StringUtils.isAnyBlank(account, password)) {
-            throw ParamException.hasBlankParamException("account", "password");
-        }
         User user = userService.login(account, password, httpServletRequest);
         return BaseResponse.success(user);
     }
@@ -72,9 +59,6 @@ public class UserController {
 
     @GetMapping("/search")
     public BaseResponse<List<User>> search(String username, HttpServletRequest httpServletRequest) {
-        if (StringUtils.isBlank(username)) {
-            throw ParamException.blankParamException("username");
-        }
         List<User> list = userService.list(username, httpServletRequest);
         return BaseResponse.success(list);
     }

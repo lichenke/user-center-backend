@@ -1,20 +1,22 @@
 package xyz.cafebabe.usercenter.common;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.io.Serializable;
 
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseResponse<T> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     // 业务状态码
-    private int code;
+    private final int code;
 
     // 接口调用结果信息
-    private String msg;
+    private final String msg;
 
     // 接口调用结果详情：对msg的扩展（主要用于说明异常情况）
     private String description;
@@ -28,26 +30,20 @@ public class BaseResponse<T> implements Serializable {
         this.data = data;
     }
 
-    public BaseResponse(int code, String msg) {
+    public BaseResponse(int code, String msg, String description) {
         this.code = code;
         this.msg = msg;
+        this.description = description;
     }
 
     public static <T> BaseResponse<T> success(T data) {
-        ErrorCode success = ErrorCode.SUCCESS;
+        ResponseCode success = ResponseCode.SUCCESS;
         return new BaseResponse<>(success.getCode(), success.getMessage(), data);
     }
 
-//    public static <T> BaseResponse<T> nullParams(String paramName) {
-//        ErrorCode paramNullError = ErrorCode.PARAM_NULL_ERROR;
-//        String message = paramNullError.getMessage();
-//        return new BaseResponse<>(paramNullError.getCode(), String.format(message, paramName));
-//    }
-//
-//    public static <T> BaseResponse<T> blankParams(String paramName) {
-//        ErrorCode paramBlankError = ErrorCode.PARAM_BLANK_ERROR;
-//        String message = paramBlankError.getMessage();
-//        return new BaseResponse<>(paramBlankError.getCode(), String.format(message, paramName));
-//    }
-
+    public static <T> BaseResponse<T> fail(StatusCode errCode, String description) {
+        int code = errCode.getCode();
+        String message = errCode.getMessage();
+        return new BaseResponse<>(code, message, description);
+    }
 }
