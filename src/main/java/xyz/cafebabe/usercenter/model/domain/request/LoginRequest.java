@@ -12,4 +12,8 @@ public class LoginRequest implements Serializable {
     private String account;
 
     private String password;
+
+    public static String getClassName() {
+        return LoginRequest.class.getSimpleName();
+    }
 }

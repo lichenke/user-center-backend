@@ -17,7 +17,7 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     public String encryptPassword(String rawPassword) {
-        if (!isValidPassword(rawPassword)) {
+        if (!isValid(rawPassword)) {
             // TODO 自定义异常对象
             throw new IllegalArgumentException("密码不符合安全要求");
         }
@@ -30,7 +30,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    public boolean isValidPassword(String rawPassword) {
+    public boolean isValid(String rawPassword) {
         if (rawPassword == null || rawPassword.trim().isEmpty()) {
             return false;
         }

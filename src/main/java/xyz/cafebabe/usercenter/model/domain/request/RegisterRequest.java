@@ -15,4 +15,8 @@ public class RegisterRequest implements Serializable {
     private String password;
 
     private String checkPassword;
+
+    public static String getClassName() {
+        return RegisterRequest.class.getSimpleName();
+    }
 }

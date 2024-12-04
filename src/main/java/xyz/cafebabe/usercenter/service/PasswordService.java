@@ -40,7 +40,7 @@ public interface PasswordService {
      * @param rawPassword 明文密码
      * @return 合规则返回true，反之返回false
      */
-    boolean isValidPassword(String rawPassword);
+    boolean isValid(String rawPassword);
 
     /**
      * 生成随机密码

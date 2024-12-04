@@ -3,6 +3,8 @@ package xyz.cafebabe.usercenter.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import xyz.cafebabe.usercenter.common.BaseResponse;
+import xyz.cafebabe.usercenter.exception.ParamException;
 import xyz.cafebabe.usercenter.model.domain.User;
 import xyz.cafebabe.usercenter.model.domain.request.LoginRequest;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
@@ -10,10 +12,9 @@ import xyz.cafebabe.usercenter.service.UserService;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.util.Collections;
 import java.util.List;
 
+// 所有的BaseResponse封装只在controller层进行
 
 /**
  * 用户控制器
@@ -29,56 +30,62 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public Long register(@RequestBody RegisterRequest request) {
+    public BaseResponse<Long> register(@RequestBody RegisterRequest request) {
         if (request == null) {
-            return null;
+            throw ParamException.nullParamException(RegisterRequest.getClassName());
         }
         String account = request.getAccount();
         String password = request.getPassword();
         String checkPassword = request.getCheckPassword();
         if (StringUtils.isAnyBlank(account, password, checkPassword)) {
-            return null;
+            throw ParamException.hasBlankParamException("account", "password", "checkPassword");
         }
-        return userService.register(account, password, checkPassword);
+        long id = userService.register(account, password, checkPassword);
+        return BaseResponse.success(id);
     }
 
     @PostMapping("/login")
-    public User login(@RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
+    public BaseResponse<User> login(@RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
         if (request == null) {
-            return null;
+            throw ParamException.nullParamException(LoginRequest.getClassName());
         }
         String account = request.getAccount();
         String password = request.getPassword();
         if (StringUtils.isAnyBlank(account, password)) {
-            return null;
+            throw ParamException.hasBlankParamException("account", "password");
         }
-        return userService.login(account, password, httpServletRequest);
+        User user = userService.login(account, password, httpServletRequest);
+        return BaseResponse.success(user);
     }
 
     @PostMapping("/logout")
-    public Boolean logout(HttpServletRequest httpServletRequest) {
-        return userService.logout(httpServletRequest);
+    public BaseResponse<Boolean> logout(HttpServletRequest httpServletRequest) {
+        boolean result = userService.logout(httpServletRequest);
+        return BaseResponse.success(result);
     }
 
     @GetMapping("/currentUser")
-    public User currentUser(HttpServletRequest httpServletRequest) {
-        return userService.currentUser(httpServletRequest);
+    public BaseResponse<User> currentUser(HttpServletRequest httpServletRequest) {
+        User user = userService.currentUser(httpServletRequest);
+        return BaseResponse.success(user);
     }
 
     @GetMapping("/search")
-    public List<User> search(String username, HttpServletRequest httpServletRequest) {
-        if (StringUtils.isEmpty(username)) {
-            return Collections.emptyList();
+    public BaseResponse<List<User>> search(String username, HttpServletRequest httpServletRequest) {
+        if (StringUtils.isBlank(username)) {
+            throw ParamException.blankParamException("username");
         }
-        return userService.list(username, httpServletRequest);
+        List<User> list = userService.list(username, httpServletRequest);
+        return BaseResponse.success(list);
     }
 
     @PostMapping("/delete")
-    public boolean deleteUser(long userId, HttpServletRequest httpServletRequest) {
+    public BaseResponse<Boolean> deleteUser(long userId, HttpServletRequest httpServletRequest) {
         if (userId <= 0) {
-            return false;
+            return null;
         }
-        return userService.delete(userId, httpServletRequest);
+        boolean result = userService.delete(userId, httpServletRequest);
+        return BaseResponse.success(result);
     }
 
 

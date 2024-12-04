@@ -49,7 +49,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return -1;
         }
         // 密码是否符合要求
-        if (!passwordService.isValidPassword(password)) {
+        if (!passwordService.isValid(password)) {
             return -1;
         }
         // 账号不包含特殊字符
@@ -87,7 +87,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return null;
         }
         // 密码是否符合要求
-        if (!passwordService.isValidPassword(password)) {
+        if (!passwordService.isValid(password)) {
             return null;
         }
         // 账号不包含特殊字符
