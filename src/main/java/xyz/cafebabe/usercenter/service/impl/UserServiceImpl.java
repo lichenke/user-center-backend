@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import xyz.cafebabe.usercenter.mapper.UserMapper;
 import xyz.cafebabe.usercenter.model.domain.User;
+import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
 import xyz.cafebabe.usercenter.service.PasswordService;
 import xyz.cafebabe.usercenter.service.UserService;
 
@@ -36,27 +38,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private PasswordService passwordService;
 
     @Override
-    public long register(String account, String password, String checkPassword) {
-        //1. 校验
-        if (StringUtils.isAllBlank(account, password, checkPassword)) {
-            return -1;
-        }
-        if (account.length() < 4) {
-            return -1;
-        }
+    public long register(RegisterRequest registerRequest) {
+        String account = registerRequest.getAccount();
+        String password = registerRequest.getPassword();
+        String checkPassword = registerRequest.getCheckPassword();
         // 密码和校验密码是否相同
         if (!password.equals(checkPassword)) {
             return -1;
         }
         // 密码是否符合要求
         if (!passwordService.isValid(password)) {
-            return -1;
-        }
-        // 账号不包含特殊字符
-        String regExp = "\\pP|\\pS|\\s+";
-        Matcher matcher = Pattern.compile(regExp).matcher(account);
-        if (matcher.find()) {
-            // 有特殊字符
             return -1;
         }
         // 账户不能有重复

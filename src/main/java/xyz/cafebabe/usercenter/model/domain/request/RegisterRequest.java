@@ -6,6 +6,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
+/**
+ * 注册请求对象
+ */
+
 @Data
 public class RegisterRequest implements Serializable {
 

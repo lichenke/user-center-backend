@@ -30,15 +30,12 @@ public class UserController {
 
     @PostMapping("/register")
     public BaseResponse<Long> register(@Validated @RequestBody RegisterRequest request) {
-        String account = request.getAccount();
-        String password = request.getPassword();
-        String checkPassword = request.getCheckPassword();
-        long id = userService.register(account, password, checkPassword);
-        return BaseResponse.success(id);
+        long userId = userService.register(request);
+        return BaseResponse.success(userId);
     }
 
     @PostMapping("/login")
-    public BaseResponse<User> login(@RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
+    public BaseResponse<User> login(@Validated @RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
         String account = request.getAccount();
         String password = request.getPassword();
         User user = userService.login(account, password, httpServletRequest);

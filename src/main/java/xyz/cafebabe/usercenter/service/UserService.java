@@ -1,7 +1,8 @@
 package xyz.cafebabe.usercenter.service;
 
-import xyz.cafebabe.usercenter.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import xyz.cafebabe.usercenter.model.domain.User;
+import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -16,12 +17,10 @@ public interface UserService extends IService<User> {
     /**
      * 用户注册
      *
-     * @param account 账号
-     * @param password 密码
-     * @param checkPassword 校验密码
+     * @param registerRequest 注册请求对象
      * @return 用户ID
      */
-    long register(String account, String password, String checkPassword);
+    long register(RegisterRequest registerRequest);
 
 
     /**
