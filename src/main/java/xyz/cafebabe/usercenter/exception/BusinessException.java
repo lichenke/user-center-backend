@@ -12,10 +12,14 @@ public class BusinessException extends RuntimeException {
     /**
      * 业务异常的详细说明
      */
-    private final String description;
+    private String description;
 
     public BusinessException(String message, String description) {
         super(message);
         this.description = description;
+    }
+
+    public BusinessException(String message) {
+        super(message);
     }
 }

@@ -1,17 +1,20 @@
 package xyz.cafebabe.usercenter.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.validation.annotation.Validated;
 import xyz.cafebabe.usercenter.model.domain.User;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
+import xyz.cafebabe.usercenter.validator.group.ServiceValidation;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 /**
-* @author lichenke
-* @description 针对表【user(用户表)】的数据库操作Service
-* @createDate 2024-11-10 22:42:29
-*/
+ * @author lichenke
+ * @description 针对表【user(用户表)】的数据库操作Service
+ * @createDate 2024-11-10 22:42:29
+ */
 public interface UserService extends IService<User> {
 
     /**
@@ -20,15 +23,16 @@ public interface UserService extends IService<User> {
      * @param registerRequest 注册请求对象
      * @return 用户ID
      */
-    long register(RegisterRequest registerRequest);
+    @Validated(ServiceValidation.class)
+    long register(@Valid RegisterRequest registerRequest);
 
 
     /**
      * 用户登录
      *
-     * @param account 账号
+     * @param account  账号
      * @param password 密码
-     * @param request HttpServletRequest
+     * @param request  HttpServletRequest
      * @return 登录的用户
      */
     User login(String account, String password, HttpServletRequest request);

@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = RegisterRequestValidator.class)
 public @interface ValidRegisterRequest {
 
-    String message() default "Invalid register request";
+    String message() default "RegisterRequest未能通过校验";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 

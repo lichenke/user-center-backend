@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import xyz.cafebabe.usercenter.exception.BusinessException;
 import xyz.cafebabe.usercenter.mapper.UserMapper;
 import xyz.cafebabe.usercenter.model.domain.User;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
@@ -29,6 +30,7 @@ import static xyz.cafebabe.usercenter.constant.UserConstant.USER_LOGIN_STATUS;
  */
 @Service
 @Slf4j
+@Validated
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
@@ -41,19 +43,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public long register(RegisterRequest registerRequest) {
         String account = registerRequest.getAccount();
         String password = registerRequest.getPassword();
-        String checkPassword = registerRequest.getCheckPassword();
-        // 密码和校验密码是否相同
-        if (!password.equals(checkPassword)) {
-            return -1;
-        }
-        // 密码是否符合要求
-        if (!passwordService.isValid(password)) {
-            return -1;
-        }
         // 账户不能有重复
-        Long count = userMapper.selectCount(new QueryWrapper<User>().eq("userAccount", account));
-        if (count > 0) {
-            return -1;
+        boolean exists = userMapper.exists(new QueryWrapper<User>().eq("userAccount", account));
+        if (exists) {
+            throw new BusinessException("用户'" + account + "'已存在");
         }
         // 密码不能明文入库，必须加密
         String encrypted = passwordService.encryptPassword(password);
@@ -61,10 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         user.setUserAccount(account);
         user.setUserPassword(encrypted);
-        int res = userMapper.insert(user);
-        if (res != 1) {
-            return -1;
-        }
+        userMapper.insert(user);
         return user.getId(); // 返回用户ID
     }
 
