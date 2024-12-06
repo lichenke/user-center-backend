@@ -11,7 +11,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.Set;
 
 import static xyz.cafebabe.usercenter.common.ResponseCode.BIZ_ERROR;
-import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_VALIDATE_ERROR;
+import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
 
 /**
  * 控制器全局异常处理切面增强类
@@ -30,7 +30,7 @@ public class ControllerExceptionAdvice {
     public BaseResponse<?> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
         // 只要触发了该异常，任意一个验证点都可以抛出，所以可以使用get(0)
         String description = e.getAllErrors().get(0).getDefaultMessage();
-        return BaseResponse.fail(PARAM_VALIDATE_ERROR, description);
+        return BaseResponse.fail(PARAM_INVALID_ERROR, description);
     }
 
     /**
@@ -43,7 +43,7 @@ public class ControllerExceptionAdvice {
     public BaseResponse<?> ConstraintViolationExceptionHandler(ConstraintViolationException e) {
         Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
         ConstraintViolation<?> o = (ConstraintViolation) constraintViolations.toArray()[0];
-        return BaseResponse.fail(PARAM_VALIDATE_ERROR, o.getMessage());
+        return BaseResponse.fail(PARAM_INVALID_ERROR, o.getMessage());
     }
 
     /**
@@ -64,8 +64,8 @@ public class ControllerExceptionAdvice {
      * @param e ParamValidateException
      * @return 通用对象返回
      */
-    @ExceptionHandler(ParamValidateException.class)
-    public BaseResponse<?> ParamValidateExceptionHandler(ParamValidateException e) {
+    @ExceptionHandler(ParamInvalidException.class)
+    public BaseResponse<?> ParamValidateExceptionHandler(ParamInvalidException e) {
         String message = e.getMessage();
         StatusCode code = e.getCode();
         return BaseResponse.fail(code, message);

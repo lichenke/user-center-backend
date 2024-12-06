@@ -29,7 +29,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public BaseResponse<Long> register(@Validated() @RequestBody RegisterRequest request) {
+    public BaseResponse<Long> register(@Validated @RequestBody RegisterRequest request) {
         long userId = userService.register(request);
         return BaseResponse.success(userId);
     }

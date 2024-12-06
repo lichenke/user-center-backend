@@ -1,6 +1,7 @@
 package xyz.cafebabe.usercenter.validator.annotation;
 
-import xyz.cafebabe.usercenter.validator.RegisterRequestValidator;
+
+import xyz.cafebabe.usercenter.validator.PasswordValidator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -9,12 +10,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = RegisterRequestValidator.class)
-public @interface ValidRegisterRequest {
+@Constraint(validatedBy = PasswordValidator.class)
+public @interface ValidPassword {
 
-    String message() default "RegisterRequest未能通过校验";
+    String message() default "'password’不符合要求";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 

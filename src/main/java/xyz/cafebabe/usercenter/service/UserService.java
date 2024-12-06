@@ -1,10 +1,8 @@
 package xyz.cafebabe.usercenter.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.springframework.validation.annotation.Validated;
 import xyz.cafebabe.usercenter.model.domain.User;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
-import xyz.cafebabe.usercenter.validator.group.ServiceValidation;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -23,7 +21,6 @@ public interface UserService extends IService<User> {
      * @param registerRequest 注册请求对象
      * @return 用户ID
      */
-    @Validated(ServiceValidation.class)
     long register(@Valid RegisterRequest registerRequest);
 
 

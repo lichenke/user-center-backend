@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import xyz.cafebabe.usercenter.exception.BusinessException;
+import xyz.cafebabe.usercenter.exception.ParamInvalidException;
 import xyz.cafebabe.usercenter.mapper.UserMapper;
 import xyz.cafebabe.usercenter.model.domain.User;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
 import static xyz.cafebabe.usercenter.constant.UserConstant.ADMIN_ROLE;
 import static xyz.cafebabe.usercenter.constant.UserConstant.USER_LOGIN_STATUS;
 
@@ -43,6 +45,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public long register(RegisterRequest registerRequest) {
         String account = registerRequest.getAccount();
         String password = registerRequest.getPassword();
+        String checkPassword = registerRequest.getCheckPassword();
+        // 密码和校验密码是否相同
+        if (!password.equals(checkPassword)) {
+            throw new ParamInvalidException(PARAM_INVALID_ERROR, "‘password’和‘checkPassword’不相同");
+        }
         // 账户不能有重复
         boolean exists = userMapper.exists(new QueryWrapper<User>().eq("userAccount", account));
         if (exists) {
