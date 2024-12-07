@@ -32,7 +32,6 @@ import static xyz.cafebabe.usercenter.constant.UserConstant.USER_LOGIN_STATUS;
  */
 @Service
 @Slf4j
-@Validated
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
