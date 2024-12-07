@@ -22,4 +22,8 @@ public class BusinessException extends RuntimeException {
     public BusinessException(String message) {
         super(message);
     }
+
+    public BusinessException(String message, Throwable t, Object... params) {
+        super(String.format(message, params), t);
+    }
 }

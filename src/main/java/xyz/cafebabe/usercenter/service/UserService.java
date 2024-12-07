@@ -2,10 +2,10 @@ package xyz.cafebabe.usercenter.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import xyz.cafebabe.usercenter.model.domain.User;
+import xyz.cafebabe.usercenter.model.domain.request.LoginRequest;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -27,12 +27,11 @@ public interface UserService extends IService<User> {
     /**
      * 用户登录
      *
-     * @param account  账号
-     * @param password 密码
+     * @param loginRequest 登录请求对象
      * @param request  HttpServletRequest
      * @return 登录的用户
      */
-    User login(String account, String password, HttpServletRequest request);
+    User login(LoginRequest loginRequest, HttpServletRequest request);
 
 
     /**

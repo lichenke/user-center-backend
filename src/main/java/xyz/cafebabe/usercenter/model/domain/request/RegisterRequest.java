@@ -18,11 +18,9 @@ public class RegisterRequest implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ValidAccount
-    @NotBlank(message = "‘account’不能为空")
     private String account;
 
     @ValidPassword
-    @NotBlank(message = "‘password’不能为空")
     private String password;
 
     @NotBlank(message = "‘checkPassword’不能为空")

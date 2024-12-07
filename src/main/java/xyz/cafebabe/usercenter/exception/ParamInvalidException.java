@@ -12,8 +12,4 @@ public class ParamInvalidException extends RuntimeException {
         super(message);
         this.code = code;
     }
-
-
-
-
 }

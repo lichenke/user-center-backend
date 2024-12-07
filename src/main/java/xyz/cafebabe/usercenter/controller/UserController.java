@@ -36,9 +36,7 @@ public class UserController {
 
     @PostMapping("/login")
     public BaseResponse<User> login(@Validated @RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
-        String account = request.getAccount();
-        String password = request.getPassword();
-        User user = userService.login(account, password, httpServletRequest);
+        User user = userService.login(request, httpServletRequest);
         return BaseResponse.success(user);
     }
 

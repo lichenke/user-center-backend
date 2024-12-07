@@ -1,5 +1,6 @@
 package xyz.cafebabe.usercenter.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -17,6 +18,7 @@ import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
  * 控制器全局异常处理切面增强类
  */
 
+@Slf4j
 @RestControllerAdvice
 public class ControllerExceptionAdvice {
 
@@ -29,8 +31,9 @@ public class ControllerExceptionAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public BaseResponse<?> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
         // 只要触发了该异常，任意一个验证点都可以抛出，所以可以使用get(0)
-        String description = e.getAllErrors().get(0).getDefaultMessage();
-        return BaseResponse.fail(PARAM_INVALID_ERROR, description);
+        String message = e.getAllErrors().get(0).getDefaultMessage();
+        log.warn(message, e);
+        return BaseResponse.fail(PARAM_INVALID_ERROR, message);
     }
 
     /**
@@ -43,7 +46,9 @@ public class ControllerExceptionAdvice {
     public BaseResponse<?> ConstraintViolationExceptionHandler(ConstraintViolationException e) {
         Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
         ConstraintViolation<?> o = (ConstraintViolation) constraintViolations.toArray()[0];
-        return BaseResponse.fail(PARAM_INVALID_ERROR, o.getMessage());
+        String message = o.getMessage();
+        log.error(message, e);
+        return BaseResponse.fail(PARAM_INVALID_ERROR, message);
     }
 
     /**
@@ -55,6 +60,7 @@ public class ControllerExceptionAdvice {
     @ExceptionHandler(BusinessException.class)
     public BaseResponse<?> BusinessExceptionHandler(BusinessException e) {
         String message = e.getMessage();
+        log.error(message, e);
         return BaseResponse.fail(BIZ_ERROR, message);
     }
 
@@ -68,6 +74,7 @@ public class ControllerExceptionAdvice {
     public BaseResponse<?> ParamValidateExceptionHandler(ParamInvalidException e) {
         String message = e.getMessage();
         StatusCode code = e.getCode();
+        log.warn(message, e);
         return BaseResponse.fail(code, message);
     }
 }

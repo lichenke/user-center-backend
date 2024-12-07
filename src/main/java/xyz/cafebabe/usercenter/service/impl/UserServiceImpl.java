@@ -5,21 +5,20 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import xyz.cafebabe.usercenter.exception.BusinessException;
 import xyz.cafebabe.usercenter.exception.ParamInvalidException;
 import xyz.cafebabe.usercenter.mapper.UserMapper;
 import xyz.cafebabe.usercenter.model.domain.User;
+import xyz.cafebabe.usercenter.model.domain.request.LoginRequest;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
 import xyz.cafebabe.usercenter.service.PasswordService;
 import xyz.cafebabe.usercenter.service.UserService;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
 import static xyz.cafebabe.usercenter.constant.UserConstant.ADMIN_ROLE;
@@ -65,34 +64,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public User login(String account, String password, HttpServletRequest request) {
-        //1. 校验
-        if (StringUtils.isAllBlank(account, password)) {
-            return null;
-        }
-        if (account.length() < 4) {
-            return null;
-        }
-        // 密码是否符合要求
-        if (!passwordService.isValid(password)) {
-            return null;
-        }
-        // 账号不包含特殊字符
-        String regExp = "\\pP|\\pS|\\s+";
-        Matcher matcher = Pattern.compile(regExp).matcher(account);
-        if (matcher.find()) {
-            // 有特殊字符
-            return null;
-        }
-        // 2. 查询用户是否存在
+    public User login(LoginRequest loginRequest, HttpServletRequest request) {
+        String account = loginRequest.getAccount();
+        String password = loginRequest.getPassword();
+        // 查询用户是否存在 // TODO which can be optimized
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("userAccount", account); // account不应该能重复，所以这个条件就够用了
+        wrapper.eq("userAccount", account); // account不能重复，所以这个条件就够用了
         wrapper.select("id", "username", "userAccount", "avatarUrl", "userPassword",
                 "gender", "phone", "email", "userStatus", "userRole");
-        User user = userMapper.selectOne(wrapper); // 只有一个，返回多个就报错
-        if (user == null || !passwordService.matches(password, user.getUserPassword())) {
-            log.info("login failed, password mismatch...");
-            return null;
+        User user;
+        try {
+            user = userMapper.selectOne(wrapper); // 只有一个，返回多个就报错
+            if (user == null) {
+                throw new BusinessException("用户'" + account + "'不存在");
+            }
+            if (!passwordService.matches(password, user.getUserPassword())) {
+                throw new BusinessException("密码错误");
+            }
+        } catch (Exception e) {
+            throw new BusinessException("登录失败: %s", e, e.getMessage());
         }
         User safe = new User();
         safe.setId(user.getId());
@@ -118,8 +108,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public boolean logout(HttpServletRequest request) {
         try {
-            // 根据sessionId移除登录态即可完成用户注销
-            request.getSession().removeAttribute(USER_LOGIN_STATUS);
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                // 根据sessionId移除登录态即可完成用户注销
+                session.removeAttribute(USER_LOGIN_STATUS);
+            }
             return true;
         } catch (Exception e) {
             return false;
