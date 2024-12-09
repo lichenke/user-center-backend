@@ -77,4 +77,18 @@ public class ControllerExceptionAdvice {
         log.warn(message, e);
         return BaseResponse.fail(code, message);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public BaseResponse<?> RuntimeExceptionHandler(RuntimeException e) {
+        String message = e.getMessage();
+        log.error(message, e);
+        return BaseResponse.fail(BIZ_ERROR, message);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public BaseResponse<?> ExceptionHandler(Exception e) {
+        String message = e.getMessage();
+        log.error(message, e);
+        return BaseResponse.fail(BIZ_ERROR, message);
+    }
 }

@@ -11,6 +11,8 @@ import xyz.cafebabe.usercenter.service.UserService;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 // 所有的BaseResponse封装只在controller层进行
@@ -22,6 +24,7 @@ import java.util.List;
  */
 @RestController
 @Slf4j
+@Validated
 @RequestMapping("/user")
 public class UserController {
 
@@ -53,16 +56,13 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public BaseResponse<List<User>> search(String username, HttpServletRequest httpServletRequest) {
+    public BaseResponse<List<User>> search(@NotBlank(message = "'username'不能为空") String username, HttpServletRequest httpServletRequest) {
         List<User> list = userService.list(username, httpServletRequest);
         return BaseResponse.success(list);
     }
 
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteUser(long userId, HttpServletRequest httpServletRequest) {
-        if (userId <= 0) {
-            return null;
-        }
+    public BaseResponse<Boolean> deleteUser(@Min(value = 1, message = "'id'不能小于1") long userId, HttpServletRequest httpServletRequest) {
         boolean result = userService.delete(userId, httpServletRequest);
         return BaseResponse.success(result);
     }

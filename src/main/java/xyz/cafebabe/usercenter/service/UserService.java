@@ -6,6 +6,8 @@ import xyz.cafebabe.usercenter.model.domain.request.LoginRequest;
 import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -55,7 +57,7 @@ public interface UserService extends IService<User> {
      * @param username 用户名
      * @return 用户对象列表
      */
-    List<User> list(String username, HttpServletRequest request);
+    List<User> list(@NotBlank(message = "'username'不能为空") String username, HttpServletRequest request);
 
     /**
      * 根据id删除用户
@@ -63,6 +65,6 @@ public interface UserService extends IService<User> {
      * @param id 用户id
      * @return 删除成功则返回true，否则返回false
      */
-    boolean delete(long id, HttpServletRequest request);
+    boolean delete(@Min(value = 1, message = "'id'不能小于1") long id, HttpServletRequest request);
 
 }
