@@ -3,8 +3,8 @@ package xyz.cafebabe.usercenter.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import xyz.cafebabe.usercenter.exception.BusinessException;
 import xyz.cafebabe.usercenter.exception.ParamInvalidException;
 import xyz.cafebabe.usercenter.mapper.UserMapper;
@@ -17,7 +17,6 @@ import xyz.cafebabe.usercenter.service.UserService;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.Collections;
 import java.util.List;
 
 import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
@@ -31,6 +30,7 @@ import static xyz.cafebabe.usercenter.constant.UserConstant.USER_LOGIN_STATUS;
  */
 @Service
 @Slf4j
+@Validated
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
@@ -107,26 +107,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean logout(HttpServletRequest request) {
-        try {
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                // 根据sessionId移除登录态即可完成用户注销
-                session.removeAttribute(USER_LOGIN_STATUS);
-            }
-            return true;
-        } catch (Exception e) {
-            return false;
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute(USER_LOGIN_STATUS) == null) {
+            throw new BusinessException("当前没有用户登录");
         }
+        // 根据sessionId移除登录态即可完成用户注销
+        session.removeAttribute(USER_LOGIN_STATUS); // 本地的cookie中sid仍然存在
+        return true;
     }
 
     @Override
     public User currentUser(HttpServletRequest request) {
-        Object currentUser = request.getSession().getAttribute(USER_LOGIN_STATUS);
-        if (currentUser == null) {
-            return null;
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute(USER_LOGIN_STATUS) == null) {
+            throw new BusinessException("当前没有用户登录");
         }
+        User user = (User) session.getAttribute(USER_LOGIN_STATUS);
         // 再查一次库，获取该用户最新的信息
-        User user = (User) currentUser;
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("id", user.getId());
         deIdentify(wrapper);
@@ -136,13 +133,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public List<User> list(String username, HttpServletRequest request) {
         // 首先鉴权
-        if (!authorized(request)) {
-            return Collections.emptyList();
+        User currentUser = currentUser(request);
+        if (!hasPermission(currentUser)) {
+            throw new BusinessException("当前用户没有该操作权限");
         }
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        if (StringUtils.isEmpty(username)) { // 不为空时才拼入条件中
-            return Collections.emptyList();
-        }
         wrapper.like("username", username);
         deIdentify(wrapper);
         return userMapper.selectList(wrapper);
@@ -151,11 +146,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public boolean delete(long id, HttpServletRequest request) {
         // 首先鉴权
-        if (!authorized(request)) {
-            return false;
-        }
-        if (id <= 0) {
-            return false;
+        User currentUser = currentUser(request);
+        if (!hasPermission(currentUser)) {
+            throw new BusinessException("当前用户没有该操作权限");
         }
         return userMapper.deleteById(id) > 0;
     }
@@ -163,15 +156,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 用户鉴权
      *
-     * @param request HttpServletRequest
+     * @param user 用户对象
      * @return 有权限则返回true，否则返回false
      */
-    private boolean authorized(HttpServletRequest request) {
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATUS);
-        if (userObj == null) {
-            return false;
-        }
-        User user = (User) userObj;
+    private boolean hasPermission(User user) {
         return user.getUserRole() == ADMIN_ROLE;
     }
 
