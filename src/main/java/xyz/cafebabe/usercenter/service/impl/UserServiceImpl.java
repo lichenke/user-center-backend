@@ -1,5 +1,6 @@
 package xyz.cafebabe.usercenter.service.impl;
 
+import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -19,7 +20,6 @@ import javax.annotation.Resource;
 import java.util.List;
 
 import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
-import static xyz.cafebabe.usercenter.constant.UserConstant.ADMIN_ROLE;
 
 /**
  * @author lichenke
@@ -115,9 +115,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void logout() {
         // 使用sa-token
         // -------------------------
-        if (!StpUtil.isLogin()) {
-            throw new BusinessException("当前没有用户登录");
-        }
+        StpUtil.checkLogin();
         StpUtil.logout();
         // -------------------------
 
@@ -155,9 +153,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public List<User> list(String username) {
         // 首先鉴权
-        User currentUser = currentUser();
-        if (!hasPermission(currentUser)) {
-            throw new BusinessException("当前用户没有该操作权限");
+        if (!StpUtil.hasPermission("user:list") && !StpUtil.hasRole("admin")) {
+            throw new NotPermissionException("user:list");
         }
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.like("username", username);
@@ -168,21 +165,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public boolean delete(long id) {
         // 首先鉴权
-        User currentUser = currentUser();
-        if (!hasPermission(currentUser)) {
-            throw new BusinessException("当前用户没有该操作权限");
+        if (!StpUtil.hasPermission("user:delete") && !StpUtil.hasRole("admin")) {
+            throw new NotPermissionException("user:delete");
         }
         return userMapper.deleteById(id) > 0;
-    }
-
-    /**
-     * 用户鉴权
-     *
-     * @param user 用户对象
-     * @return 有权限则返回true，否则返回false
-     */
-    private boolean hasPermission(User user) {
-        return user.getUserRole() == ADMIN_ROLE;
     }
 
     /**

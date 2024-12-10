@@ -1,5 +1,6 @@
 package xyz.cafebabe.usercenter.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -54,12 +55,14 @@ public class UserController {
         return BaseResponse.success(user);
     }
 
+    @SaCheckPermission(value = "user:list", orRole = "admin")
     @GetMapping("/search")
     public BaseResponse<List<User>> search(@NotBlank(message = "'username'不能为空") String username) {
         List<User> list = userService.list(username);
         return BaseResponse.success(list);
     }
 
+    @SaCheckPermission(value = "user:delete", orRole = "admin")
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@Min(value = 1, message = "'id'不能小于1") long userId) {
         boolean result = userService.delete(userId);

@@ -1,6 +1,7 @@
 package xyz.cafebabe.usercenter.exception;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,8 +13,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.Set;
 
-import static xyz.cafebabe.usercenter.common.ResponseCode.BIZ_ERROR;
-import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
+import static xyz.cafebabe.usercenter.common.ResponseCode.*;
 
 /**
  * 控制器全局异常处理切面增强类
@@ -23,12 +23,6 @@ import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
 @RestControllerAdvice
 public class ControllerExceptionAdvice {
 
-    /**
-     * 接管全局因接口参数校验失败而抛出的异常
-     *
-     * @param e MethodArgumentNotValidException
-     * @return 通用对象返回
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public BaseResponse<?> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
         // 只要触发了该异常，任意一个验证点都可以抛出，所以可以使用get(0)
@@ -37,12 +31,6 @@ public class ControllerExceptionAdvice {
         return BaseResponse.fail(PARAM_INVALID_ERROR, message);
     }
 
-    /**
-     * 接管全局因接口参数校验失败而抛出的异常
-     *
-     * @param e ConstraintViolationException
-     * @return 通用对象返回
-     */
     @ExceptionHandler(ConstraintViolationException.class)
     public BaseResponse<?> ConstraintViolationExceptionHandler(ConstraintViolationException e) {
         Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
@@ -56,15 +44,16 @@ public class ControllerExceptionAdvice {
     public BaseResponse<?> NotLoginExceptionHandler(NotLoginException e) {
         String message = e.getMessage();
         log.error(message, e);
-        return BaseResponse.fail(BIZ_ERROR, message);
+        return BaseResponse.fail(NOT_LOGIN, message);
     }
 
-    /**
-     * 接管全局业务异常
-     *
-     * @param e BusinessException
-     * @return 通用对象返回
-     */
+    @ExceptionHandler(NotPermissionException.class)
+    public BaseResponse<?> NotPermissionExceptionHandler(NotPermissionException e) {
+        String message = e.getMessage();
+        log.error(message, e);
+        return BaseResponse.fail(NO_PERMISSION, message);
+    }
+
     @ExceptionHandler(BusinessException.class)
     public BaseResponse<?> BusinessExceptionHandler(BusinessException e) {
         String message = e.getMessage();
@@ -72,12 +61,6 @@ public class ControllerExceptionAdvice {
         return BaseResponse.fail(BIZ_ERROR, message);
     }
 
-    /**
-     * 接管全局因参数未通过业务层校验而抛出的异常
-     *
-     * @param e ParamValidateException
-     * @return 通用对象返回
-     */
     @ExceptionHandler(ParamInvalidException.class)
     public BaseResponse<?> ParamValidateExceptionHandler(ParamInvalidException e) {
         String message = e.getMessage();

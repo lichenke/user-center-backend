@@ -5,9 +5,11 @@ public enum ResponseCode implements StatusCode {
 
     PARAM_INVALID_ERROR(40001, "请求参数校验失败"),
 
-    BIZ_ERROR(50001, "业务异常");
+    BIZ_ERROR(50001, "业务异常"),
 
+    NOT_LOGIN(50002, "未登录"),
 
+    NO_PERMISSION(50003, "无权限");
 
     private final int code;
 
