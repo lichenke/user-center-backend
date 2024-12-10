@@ -1,5 +1,6 @@
 package xyz.cafebabe.usercenter.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -49,6 +50,13 @@ public class ControllerExceptionAdvice {
         String message = o.getMessage();
         log.error(message, e);
         return BaseResponse.fail(PARAM_INVALID_ERROR, message);
+    }
+
+    @ExceptionHandler(NotLoginException.class)
+    public BaseResponse<?> NotLoginExceptionHandler(NotLoginException e) {
+        String message = e.getMessage();
+        log.error(message, e);
+        return BaseResponse.fail(BIZ_ERROR, message);
     }
 
     /**

@@ -1,5 +1,6 @@
 package xyz.cafebabe.usercenter.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +16,10 @@ import xyz.cafebabe.usercenter.service.PasswordService;
 import xyz.cafebabe.usercenter.service.UserService;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 
 import static xyz.cafebabe.usercenter.common.ResponseCode.PARAM_INVALID_ERROR;
 import static xyz.cafebabe.usercenter.constant.UserConstant.ADMIN_ROLE;
-import static xyz.cafebabe.usercenter.constant.UserConstant.USER_LOGIN_STATUS;
 
 /**
  * @author lichenke
@@ -64,10 +62,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public User login(LoginRequest loginRequest, HttpServletRequest request) {
+    public User login(LoginRequest loginRequest) {
         String account = loginRequest.getAccount();
         String password = loginRequest.getPassword();
-        // 查询用户是否存在 // TODO which can be optimized
+        // 查询用户是否存在
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("userAccount", account); // account不能重复，所以这个条件就够用了
         wrapper.select("id", "username", "userAccount", "avatarUrl", "userPassword",
@@ -84,8 +82,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         } catch (Exception e) {
             throw new BusinessException("登录失败: %s", e, e.getMessage());
         }
+        // 使用sa-token
+        // -------------------------
+        Long userId = user.getId();
+        if (StpUtil.isLogin(userId) && StpUtil.getTokenValue() != null) { // 暂时只允许单客户端登录
+            throw new BusinessException("该用户已登录，不允许重复登录");
+        }
+        StpUtil.login(userId);
+        // -------------------------
         User safe = new User();
-        safe.setId(user.getId());
+        safe.setId(userId);
         safe.setUsername(user.getUsername());
         safe.setUserAccount(user.getUserAccount());
         safe.setAvatarUrl(user.getAvatarUrl());
@@ -101,39 +107,55 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 前端再次请求后端的时候（相同域名），在请求头中带上cookie去请求
         // 后端拿到前端传来的cookie，找到对应的session
         // 后端从session中可以取出基于该session存储的变量（用户信息）
-        request.getSession().setAttribute(USER_LOGIN_STATUS, safe);
+        // request.getSession().setAttribute(USER_LOGIN_STATUS, safe);
         return safe;
     }
 
     @Override
-    public boolean logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute(USER_LOGIN_STATUS) == null) {
+    public void logout() {
+        // 使用sa-token
+        // -------------------------
+        if (!StpUtil.isLogin()) {
             throw new BusinessException("当前没有用户登录");
         }
-        // 根据sessionId移除登录态即可完成用户注销
-        session.removeAttribute(USER_LOGIN_STATUS); // 本地的cookie中sid仍然存在
-        return true;
+        StpUtil.logout();
+        // -------------------------
+
+//        HttpSession session = request.getSession(false);
+//        if (session == null || session.getAttribute(USER_LOGIN_STATUS) == null) {
+//            throw new BusinessException("当前没有用户登录");
+//        }
+//        // 根据sessionId移除登录态即可完成用户注销
+//        session.removeAttribute(USER_LOGIN_STATUS); // 本地的cookie中sid仍然存在
     }
 
     @Override
-    public User currentUser(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute(USER_LOGIN_STATUS) == null) {
-            throw new BusinessException("当前没有用户登录");
-        }
-        User user = (User) session.getAttribute(USER_LOGIN_STATUS);
-        // 再查一次库，获取该用户最新的信息
+    public User currentUser() {
+        // 使用sa-token
+        // ----------------
+        long loginId = StpUtil.getLoginIdAsLong();
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("id", user.getId());
+        wrapper.eq("id", loginId);
         deIdentify(wrapper);
         return userMapper.selectOne(wrapper);
+        // ----------------
+
+//        HttpSession session = request.getSession(false);
+//        if (session == null || session.getAttribute(USER_LOGIN_STATUS) == null) {
+//            throw new BusinessException("当前没有用户登录");
+//        }
+//        User user = (User) session.getAttribute(USER_LOGIN_STATUS);
+//        // 再查一次库，获取该用户最新的信息
+//        QueryWrapper<User> wrapper = new QueryWrapper<>();
+//        wrapper.eq("id", user.getId());
+//        deIdentify(wrapper);
+//        return userMapper.selectOne(wrapper);
     }
 
     @Override
-    public List<User> list(String username, HttpServletRequest request) {
+    public List<User> list(String username) {
         // 首先鉴权
-        User currentUser = currentUser(request);
+        User currentUser = currentUser();
         if (!hasPermission(currentUser)) {
             throw new BusinessException("当前用户没有该操作权限");
         }
@@ -144,9 +166,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public boolean delete(long id, HttpServletRequest request) {
+    public boolean delete(long id) {
         // 首先鉴权
-        User currentUser = currentUser(request);
+        User currentUser = currentUser();
         if (!hasPermission(currentUser)) {
             throw new BusinessException("当前用户没有该操作权限");
         }

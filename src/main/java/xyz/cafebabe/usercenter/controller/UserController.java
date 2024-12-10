@@ -10,7 +10,6 @@ import xyz.cafebabe.usercenter.model.domain.request.RegisterRequest;
 import xyz.cafebabe.usercenter.service.UserService;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
@@ -38,32 +37,32 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public BaseResponse<User> login(@Validated @RequestBody LoginRequest request, HttpServletRequest httpServletRequest) {
-        User user = userService.login(request, httpServletRequest);
+    public BaseResponse<User> login(@Validated @RequestBody LoginRequest request) {
+        User user = userService.login(request);
         return BaseResponse.success(user);
     }
 
     @PostMapping("/logout")
-    public BaseResponse<Boolean> logout(HttpServletRequest httpServletRequest) {
-        boolean result = userService.logout(httpServletRequest);
-        return BaseResponse.success(result);
+    public BaseResponse<?> logout() {
+        userService.logout();
+        return BaseResponse.success();
     }
 
     @GetMapping("/currentUser")
-    public BaseResponse<User> currentUser(HttpServletRequest httpServletRequest) {
-        User user = userService.currentUser(httpServletRequest);
+    public BaseResponse<User> currentUser() {
+        User user = userService.currentUser();
         return BaseResponse.success(user);
     }
 
     @GetMapping("/search")
-    public BaseResponse<List<User>> search(@NotBlank(message = "'username'不能为空") String username, HttpServletRequest httpServletRequest) {
-        List<User> list = userService.list(username, httpServletRequest);
+    public BaseResponse<List<User>> search(@NotBlank(message = "'username'不能为空") String username) {
+        List<User> list = userService.list(username);
         return BaseResponse.success(list);
     }
 
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteUser(@Min(value = 1, message = "'id'不能小于1") long userId, HttpServletRequest httpServletRequest) {
-        boolean result = userService.delete(userId, httpServletRequest);
+    public BaseResponse<Boolean> deleteUser(@Min(value = 1, message = "'id'不能小于1") long userId) {
+        boolean result = userService.delete(userId);
         return BaseResponse.success(result);
     }
 

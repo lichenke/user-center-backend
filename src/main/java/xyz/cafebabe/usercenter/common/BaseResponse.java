@@ -41,6 +41,10 @@ public class BaseResponse<T> implements Serializable {
         return new BaseResponse<>(success.getCode(), success.getMessage(), data);
     }
 
+    public static <T> BaseResponse<T> success() {
+        return success(null);
+    }
+
     public static <T> BaseResponse<T> fail(StatusCode errCode, String description) {
         int code = errCode.getCode();
         String message = errCode.getMessage();
