@@ -56,7 +56,7 @@ public class Permission implements Serializable {
      * 是否删除 0-未删除
      */
     @TableLogic
-    private Integer is_delete;
+    private Integer isDelete;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

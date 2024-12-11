@@ -3,6 +3,8 @@ package xyz.cafebabe.usercenter.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import xyz.cafebabe.usercenter.model.domain.Permission;
 
+import java.util.List;
+
 /**
 * @author lichenke
 * @description 针对表【permission(权限表)】的数据库操作Mapper
@@ -11,6 +13,7 @@ import xyz.cafebabe.usercenter.model.domain.Permission;
 */
 public interface PermissionMapper extends BaseMapper<Permission> {
 
+    List<String> getPermissions(long userId);
 }
 
 

@@ -12,8 +12,18 @@
             <result property="description" column="description" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-            <result property="is_delete" column="is_delete" jdbcType="TINYINT"/>
+            <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
     </resultMap>
+
+    <select id="getPermissions" resultType="java.lang.String">
+        SELECT DISTINCT
+             p.permission_key
+        FROM user u
+             JOIN user_role ur ON u.id = ur.user_id
+             JOIN role_permission rp ON ur.role_id = rp.role_id
+             JOIN permission p ON rp.permission_id = p.id
+        WHERE u.id = #{userId} AND u.user_status = 0
+    </select>
 
     <sql id="Base_Column_List">
         id,resource,action,
