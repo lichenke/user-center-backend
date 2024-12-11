@@ -1,7 +1,9 @@
 package xyz.cafebabe.usercenter.model.domain;
 
-import com.baomidou.mybatisplus.annotation.*;
-
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -10,7 +12,6 @@ import lombok.Data;
 
 /**
  * 用户表
- *
  * @TableName user
  */
 @TableName(value ="user")
@@ -31,12 +32,12 @@ public class User implements Serializable {
     /**
      * 账号
      */
-    private String userAccount;
+    private String account;
 
     /**
      * 用户头像
      */
-    private String avatarUrl;
+    private String avatar;
 
     /**
      * 性别
@@ -46,7 +47,7 @@ public class User implements Serializable {
     /**
      * 密码
      */
-    private String userPassword;
+    private String pass;
 
     /**
      * 电话
@@ -76,13 +77,7 @@ public class User implements Serializable {
     /**
      * 是否删除 0-未删除
      */
-    @TableLogic
     private Integer isDelete;
-
-    /**
-     * 用户角色 0-普通用户 1-管理员
-     */
-    private Integer userRole;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

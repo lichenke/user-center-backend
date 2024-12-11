@@ -47,7 +47,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new ParamInvalidException(PARAM_INVALID_ERROR, "‘password’和‘checkPassword’不相同");
         }
         // 账户不能有重复
-        boolean exists = userMapper.exists(new QueryWrapper<User>().eq("userAccount", account));
+        boolean exists = userMapper.exists(new QueryWrapper<User>().eq("account", account));
         if (exists) {
             throw new BusinessException("用户'" + account + "'已存在");
         }
@@ -55,9 +55,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String encrypted = passwordService.encryptPassword(password);
         // 入库
         User user = new User();
-        user.setUserAccount(account);
-        user.setUserPassword(encrypted);
+        user.setAccount(account);
+        user.setPass(encrypted);
         userMapper.insert(user);
+        // TODO 默认添加一个普通用户的角色
         return user.getId(); // 返回用户ID
     }
 
@@ -67,16 +68,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String password = loginRequest.getPassword();
         // 查询用户是否存在
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("userAccount", account); // account不能重复，所以这个条件就够用了
-        wrapper.select("id", "username", "userAccount", "avatarUrl", "userPassword",
-                "gender", "phone", "email", "userStatus", "userRole");
+        wrapper.eq("account", account); // account不能重复，所以这个条件就够用了
+        wrapper.select("id", "username", "account", "avatar", "pass",
+                "gender", "phone", "email", "user_status");
         User user;
         try {
             user = userMapper.selectOne(wrapper); // 只有一个，返回多个就报错
             if (user == null) {
                 throw new BusinessException("用户'" + account + "'不存在");
             }
-            if (!passwordService.matches(password, user.getUserPassword())) {
+            Long userId = user.getId();
+            if (StpUtil.isLogin(userId) && StpUtil.getTokenValue() != null) { // 暂时只允许单客户端登录
+                throw new BusinessException("该用户已登录，不允许重复登录");
+            }
+            if (!passwordService.matches(password, user.getPass())) {
                 throw new BusinessException("密码错误");
             }
         } catch (Exception e) {
@@ -85,21 +90,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 使用sa-token
         // -------------------------
         Long userId = user.getId();
-        if (StpUtil.isLogin(userId) && StpUtil.getTokenValue() != null) { // 暂时只允许单客户端登录
-            throw new BusinessException("该用户已登录，不允许重复登录");
-        }
         StpUtil.login(userId);
         // -------------------------
         User safe = new User();
         safe.setId(userId);
         safe.setUsername(user.getUsername());
-        safe.setUserAccount(user.getUserAccount());
-        safe.setAvatarUrl(user.getAvatarUrl());
+        safe.setAccount(user.getAccount());
+        safe.setAvatar(user.getAvatar());
         safe.setGender(user.getGender());
         safe.setPhone(user.getPhone());
         safe.setEmail(user.getEmail());
         safe.setUserStatus(user.getUserStatus());
-        safe.setUserRole(user.getUserRole());
         // 4. 记录用户的登录态
         // 客户端连接服务器后，得到一个session状态（匿名会话），返回给前端
         // 用户登录成功后，得到了登录成功的session，并且给该session设置一些值（比如用户信息），返回给前端一个设置cookie的命令
@@ -175,8 +176,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 用户信息脱敏
      */
     private void deIdentify(QueryWrapper<User> wrapper) {
-        wrapper.select("id", "username", "userAccount", "avatarUrl",
-                "gender", "phone", "email", "userStatus", "userRole");
+        wrapper.select("id", "username", "account", "avatar", "gender", "phone", "email", "user_status");
     }
 
 }
