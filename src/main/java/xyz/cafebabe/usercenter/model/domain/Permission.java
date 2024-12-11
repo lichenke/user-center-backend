@@ -9,58 +9,38 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 /**
- * 用户表
- * @TableName user
+ * 权限表
+ * @TableName permission
  */
-@TableName(value ="user")
+@TableName(value ="permission")
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class User implements Serializable {
+public class Permission implements Serializable {
     /**
-     * id
+     * 权限ID
      */
     @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
-     * 用户昵称
+     * 资源/对象
      */
-    private String username;
+    private String resource;
 
     /**
-     * 账号
+     * 操作类型
      */
-    private String account;
+    private String action;
 
     /**
-     * 用户头像
+     * 权限标识
      */
-    private String avatar;
+    private String permissionKey;
 
     /**
-     * 性别
+     * 权限描述
      */
-    private Integer gender;
-
-    /**
-     * 密码
-     */
-    private String pass;
-
-    /**
-     * 电话
-     */
-    private String phone;
-
-    /**
-     * 邮箱
-     */
-    private String email;
-
-    /**
-     * 状态 0-正常
-     */
-    private Integer userStatus;
+    private String description;
 
     /**
      * 创建时间
@@ -76,7 +56,7 @@ public class User implements Serializable {
      * 是否删除 0-未删除
      */
     @TableLogic
-    private Integer isDelete;
+    private Integer is_delete;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
